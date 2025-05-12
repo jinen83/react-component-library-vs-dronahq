@@ -1,0 +1,1005 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Engineer's Guide: Building a React Component Library From Scratch</title>
+  <meta name="description" content="A technical guide for engineers on building a React component library: setup, tooling (TypeScript, Rollup, Storybook), component patterns, testing, publishing, and advanced considerations.">
+  <meta name="keywords" content="react component library tutorial, build react library, react ui components technical guide, typescript react components, rollup react library, storybook tutorial, react component testing, react library publishing, tldr react library">
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap" rel="stylesheet">
+  <meta property="og:title" content="Engineer's Guide: Building a React Component Library From Scratch">
+  <meta property="og:description" content="Step-by-step technical instructions for engineers to create, test, and publish a robust and scalable React component library. Includes a TL;DR summary.">
+  <meta property="og:type" content="article">
+  <meta property="og:url" content="https://yourdomain.com/engineer-guide-react-component-library">
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "TechArticle",
+    "headline": "Engineer's Technical Guide to Building a React Component Library for Internal Tools (with TL;DR)",
+    "description": "Detailed technical guide for engineers on setting up a React component library project, developing components with TypeScript, testing, using Storybook for documentation, and publishing to npm. Includes a TL;DR summary.",
+    "author": { "@type": "Person", "name": "Your Name" },
+    "datePublished": "2025-05-11",
+    "keywords": "react component library, react components, build react library, typescript, rollup, storybook, jest, react testing library, npm publish, advanced react patterns, tldr"
+  }
+  </script>
+  <style>
+    /* Reset & Base */
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html { font-size: 16px; scroll-behavior: smooth; }
+    body {
+      font-family: 'Montserrat', Arial, sans-serif; /* Montserrat Added */
+      line-height: 1.6;
+      color: #333;
+      background: #f9f9f9;
+    }
+    
+    /* Hero Section Styling */
+    .hero-section {
+      background-color: #4A90E2; /* A distinct background color for the hero */
+      color: #ffffff;
+      padding: 3em 20px; /* More padding */
+      text-align: center;
+      /* margin-bottom: 2em; No margin-bottom if TLDR follows directly */
+    }
+    .hero-section h1 {
+      color: #ffffff;
+      font-size: 2.8em; /* Larger font size for the main title */
+      margin-bottom: 0.3em;
+      font-weight: 700;
+    }
+    .hero-section p {
+      font-size: 1.1em; /* Slightly larger font for the intro paragraph */
+      max-width: 700px;
+      margin-left: auto;
+      margin-right: auto;
+      line-height: 1.7;
+      opacity: 0.9;
+    }
+    
+     .hero__logo {
+  position: absolute !important;
+  top: 1rem !important;
+  right: 1rem !important;
+  max-height: 30px !important;   /* shrink logo */
+  width: auto !important;         /* keep proportions */
+  object-fit: contain !important;
+  z-index: 10 !important;
+}
+    
+
+
+    /* TLDR Section Styling */
+    .tldr-section {
+      background-color: #eef4fA; /* Light distinct background */
+      border-left: 5px solid #4A90E2; /* Accent border */
+      margin: 0 auto 2em auto; /* Centered, with bottom margin before TOC */
+      padding: 1.5em 20px;
+      max-width: 800px;
+      border-radius: 0 4px 4px 0; /* Slight rounding */
+    }
+    .tldr-section h3 {
+      margin-top: 0;
+      color: #2c3e50;
+      font-weight: 700;
+    }
+    .tldr-section p {
+      margin-bottom: 0.75em;
+    }
+    .tldr-section ul {
+      padding-left: 20px;
+      margin-bottom: 0;
+    }
+    .tldr-section li {
+      margin-bottom: 0.3em;
+    }
+
+
+    main { max-width: 800px; margin: auto; padding: 0 20px; } /* Added padding for main content area */
+    footer { max-width: 800px; margin: 2em auto; padding: 0 20px; }
+
+    h2, h3 { color: #222; margin-bottom: 0.5em; font-weight: 700;}
+    h2 { font-size: 1.8em; margin-top: 1.5em; border-bottom: 1px solid #eee; padding-bottom: 0.3em;}
+    h3 { font-size: 1.4em; margin-top: 1em; } /* Reset for general h3 if TLDR h3 is different */
+    section > h2:first-child, section > h3:first-child { margin-top: 0; } /* Avoid double margin for first heading in section */
+
+
+    p { margin-bottom: 1em; }
+    pre {
+      background: #2d2d2d;
+      color: #f8f8f2;
+      padding: 1em;
+      overflow-x: auto;
+      border-radius: 4px;
+      position: relative;
+      margin-bottom: 1em;
+    }
+    code { font-family: 'Courier New', monospace; background: #e7e7e7; padding: 0.1em 0.3em; border-radius: 3px;}
+    pre code { background: transparent; padding: 0; } /* Reset for code inside pre */
+
+    .copy-btn {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      background: rgba(255,255,255,0.2);
+      border: none;
+      color: #fff;
+      padding: 4px 8px;
+      cursor: pointer;
+      border-radius: 3px;
+      font-size: 0.9em;
+    }
+    .copy-btn:hover {
+        background: rgba(255,255,255,0.4);
+    }
+
+    /* Responsive */
+    @media (max-width: 600px) {
+      .hero-section h1 { font-size: 2.2em; }
+      .hero-section p { font-size: 1em; }
+      body { padding: 0; } /* Remove body padding for smaller screens if main has padding */
+      .hero-section { padding: 2em 15px; }
+      .tldr-section { margin-left: 15px; margin-right: 15px; padding: 1em 15px;}
+      main { padding: 0 15px; }
+      footer { padding: 0 15px; }
+      .copy-btn { font-size: 0.8em; }
+      h2 { font-size: 1.6em; }
+      h3 { font-size: 1.2em; } /* General h3 responsive */
+      .tldr-section h3 { font-size: 1.3em; } /* TLDR h3 responsive */
+    }
+
+    /* Table of Contents */
+    #toc {
+      background: #fff;
+      padding: 15px; /* Increased padding */
+      border: 1px solid #ddd;
+      margin: 0 auto 2em auto; /* Centered and added margin */
+      max-width: 800px;
+      border-radius: 4px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    }
+    #toc strong {
+        display: block;
+        font-size: 1.2em;
+        margin-bottom: 0.75em;
+        color: #333;
+        font-weight: 700;
+    }
+    #toc ul { list-style: none; padding-left: 0; }
+    #toc li + li { margin-top: 0.5em; }
+    #toc a { text-decoration: none; color: #1a73e8; }
+    #toc a:hover { text-decoration: underline; color: #1255a7;}
+
+    /* Tables */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 1.5em;
+      background-color: #fff;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.03);
+    }
+    th, td {
+      border: 1px solid #ddd;
+      padding: 0.75em;
+      text-align: left;
+      vertical-align: top;
+    }
+    th {
+      background-color: #f2f2f2;
+      font-weight: 700; /* Bolder for Montserrat */
+    }
+    ul {
+        padding-left: 20px; /* Standard padding for lists */
+        margin-bottom: 1em;
+    }
+    li {
+        margin-bottom: 0.5em;
+    }
+    
+     .testimonial-ad {
+            font-family: 'Montserrat', sans-serif;
+            background-color: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 10px;
+            padding: 20px 25px;
+            /* max-width: 650px; /* This will be controlled by sidebar width */
+            margin: 0 0 2rem 0; /* Only bottom margin, as sidebar controls placement */
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.06);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            position: relative;
+        }
+
+        .testimonial-ad__image-container {
+            margin-bottom: 15px;
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            overflow: hidden;
+            box-shadow: 0 3px 8px rgba(0, 0, 0, 0.08);
+            flex-shrink: 0;
+        }
+
+        .testimonial-ad__image {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .testimonial-ad__content {
+            width: 100%;
+            position: relative;
+        }
+
+        .testimonial-ad__headline {
+            font-size: 1.3em; /* Adjusted for sidebar context */
+            font-weight: 700;
+            color: #212529;
+            margin-bottom: 12px; /* Adjusted margin */
+            line-height: 1.35;
+        }
+
+        .testimonial-ad__quote {
+            font-size: 0.95em; /* Adjusted for sidebar context */
+            color: #495057;
+            line-height: 1.6;
+            margin-bottom: 12px;
+            font-style: italic;
+            position: relative;
+            padding: 0 10px; /* Adjusted padding */
+        }
+
+        .testimonial-ad__quote::before,
+        .testimonial-ad__quote::after {
+            content: '"';
+            font-family: 'Georgia', serif;
+            font-size: 2.5em; /* Adjusted size */
+            color: #ced4da;
+            position: absolute;
+            line-height: 0;
+        }
+
+        .testimonial-ad__quote::before {
+            top: 0.1em; 
+            left: -0px; 
+        }
+
+        .testimonial-ad__quote::after {
+            bottom: 0; 
+            right: -0px; 
+        }
+
+        .testimonial-ad__quote strong {
+            font-weight: 600;
+            color: #007bff;
+            font-style: normal;
+        }
+
+        .testimonial-ad__author {
+            font-size: 0.85em; 
+            font-weight: 600;
+            color: #343a40;
+            margin-bottom: 3px; 
+            margin-top: -5px;
+        }
+        .testimonial-ad__author-title {
+            font-size: 0.75em; 
+            font-weight: 500;
+            color: #6c757d;
+            margin-bottom: 18px; 
+        }
+
+        .testimonial-ad__cta {
+            display: inline-block;
+            background-color: #007bff;
+            color: #ffffff;
+            padding: 9px 20px; /* Adjusted padding */
+            border-radius: 6px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 0.9em; /* Adjusted size */
+            transition: background-color 0.2s ease, transform 0.1s ease-out, box-shadow 0.15s ease;
+            box-shadow: 0 2px 6px rgba(0, 123, 255, 0.25);
+        }
+
+        .testimonial-ad__cta:hover,
+        .testimonial-ad__cta:focus {
+            background-color: #0056b3;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 8px rgba(0, 123, 255, 0.3);
+        }
+
+        .testimonial-ad__cta:active {
+            transform: translateY(0px);
+            box-shadow: 0 1px 3px rgba(0, 123, 255, 0.25);
+        }
+    
+    
+   .hero__cta {
+  display: block; /* Changed from inline-block to make it full-width */
+  width: 100%; /* Explicitly set width to 100% of its container */
+  padding: 0.85rem 1.5rem; /* Adjusted horizontal padding slightly, vertical padding remains */
+  background-color: #ffc107; /* Vibrant yellow */
+  color: #212529; /* Darker text for contrast */
+  border-radius: 6px;
+  font-weight: 300;
+  text-decoration: none;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  text-align: center; /* Ensure text inside the full-width button is centered */
+  border: 1px solid #e0a800;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15), 0 2px 4px rgba(0, 0, 0, 0.1);
+  transition: background-color 0.25s ease, color 0.25s ease, transform 0.15s ease-out, box-shadow 0.2s ease;
+  margin-top: 1rem; /* Increased margin-top for better separation when full-width */
+  margin-bottom: 0.5rem; /* Optional: add some space below if needed */
+}
+
+
+
+.hero__cta a {
+  color: #0056b3; /* A clear, accessible blue for the link */
+  text-decoration: underline; /* Standard link appearance for clarity */
+  font-weight: 300; /* Semi-bold, noticeable but not shouting */
+  /* text-transform: none; --- This is the default, so explicitly removing a previous uppercase is done by not having it */
+  padding: 0.1rem 0.2rem; /* Minimal padding to give it a slight visual separation if needed */
+  margin: 0 0.1rem; /* Small margin for spacing within the text flow */
+  border-radius: 3px; /* Slight rounding if it ever gets a background on hover */
+  transition: color 0.2s ease, background-color 0.2s ease;
+}
+
+.hero__cta a:hover,
+.hero__cta a:focus {
+  color: #003d80; /* Darker blue on hover/focus for feedback */
+  background-color: #e9ecef; /* Very subtle background highlight on hover/focus */
+  text-decoration: underline; /* Maintain underline */
+}
+  </style>
+</head>
+<body>
+
+  <header class="hero-section">
+   <img 
+    src="https://www.dronahq.com/wp-content/uploads/2023/02/logoWhite.png" 
+    alt="DronaHQ Logo" 
+    class="hero__logo" 
+  /><br>
+    <h1>Engineer's Guide: Building a React Component Library From Scratch</h1>
+   <p class="hero__cta"> Need custom internal tools, minus the usual dev marathon? 
+  <a href="https://dronahq.com/signup?ref=jdBlog-reactlibrary-vs-Dronahq"> Try DronaHQ Free </a> 
+  —Go from zero to deployed app in an afternoon!
+</p>
+   
+  </header>
+
+  <section class="tldr-section">
+    <h3>TL;DR: Engineer's Quick Start</h3>
+    <p>This guide walks engineers through building a React component library from scratch. Key steps include:</p>
+    <ul>
+      <li><strong>Setup a robust project:</strong> Initialize with React, TypeScript, Rollup (for bundling), Jest/RTL (for testing), and Storybook (for development/documentation).</li>
+      <li><strong>Structure for scalability:</strong> Organize components, hooks, styles, and utilities for easy maintenance and growth.</li>
+      <li><strong>Build & Test Components:</strong> Develop individual UI components (e.g., a Button example provided), write comprehensive unit tests, and create interactive Storybook stories for documentation.</li>
+      <li><strong>Publish & Version:</strong> Configure your <code>package.json</code> correctly and use npm (or a private registry) to publish your versioned library effectively.</li>
+      <li><strong>Consider Advanced Topics:</strong> Implement accessibility (A11y), theming strategies, performance optimizations, and helpful utility hooks to create a production-ready, professional-grade library.</li>
+    </ul>
+  </section>
+
+  <nav id="toc">
+    <strong>Table of Contents</strong>
+    <ul>
+      <li><a href="#introduction">1. Introduction: Why Build a Component Library?</a></li>
+      <li><a href="#setup">2. Core Project Setup & Essential Tooling</a></li>
+      <li><a href="#structure">3. Structuring Your Library for Maintainability</a></li>
+      <li><a href="#example-component">4. Crafting Your First Component (Button Example)</a></li>
+      <li><a href="#testing">5. Comprehensive Testing & Storybook Integration</a></li>
+      <li><a href="#publishing">6. Publishing & Versioning Your Library</a></li>
+      <li><a href="#advanced-considerations">7. Advanced Considerations for Robust Libraries</a></li>
+      <li><a href="#conclusion">8. Conclusion & Best Practices</a></li>
+    </ul>
+  </nav>
+
+  <main>
+    <section id="introduction">
+      <h2>1. Introduction: Why Build a Component Library?</h2>
+      <p>As an engineer, you understand the value of DRY (Don't Repeat Yourself) principles and maintainable code. A <strong>React component library</strong> embodies these by providing a centralized, versioned collection of reusable UI elements. For internal tools, this means:</p>
+      <ul>
+        <li><strong>Consistency:</strong> Ensuring all internal applications share a cohesive look, feel, and behavior.</li>
+        <li><strong>Efficiency:</strong> Accelerating development by providing pre-built, tested UI building blocks.</li>
+        <li><strong>Maintainability:</strong> Simplifying updates and bug fixes—change a component in the library, and it updates across all consuming applications (with version control).</li>
+        <li><strong>Quality:</strong> Enforcing best practices, accessibility standards, and thorough testing at the component level.</li>
+      </ul>
+      <p>This guide focuses on the technical execution of building such a library. For a higher-level overview on planning and strategy, refer to resources aimed at engineering management.</p>
+    </section>
+
+    <section id="setup">
+      <h2>2. Core Project Setup & Essential Tooling</h2>
+      <p>Setting up your project correctly is crucial. We'll use TypeScript for type safety, Rollup for efficient bundling, Jest for testing, and Storybook for component development and documentation.</p>
+      <p>Start by initializing a new npm package and installing essential development dependencies:</p>
+      <pre><button class="copy-btn">Copy</button><code>mkdir my-react-ui-library &amp;&amp; cd my-react-ui-library
+npm init -y
+# Core React and build tools
+npm install --save-dev react react-dom typescript rollup @rollup/plugin-node-resolve @rollup/plugin-commonjs @rollup/plugin-typescript @babel/preset-react @babel/preset-typescript tslib
+# Testing tools
+npm install --save-dev jest @testing-library/react @testing-library/jest-dom jest-environment-jsdom babel-jest
+# Storybook
+npm install --save-dev storybook @storybook/react-webpack5 @storybook/addon-essentials @storybook/addon-interactions @storybook/testing-library webpack
+# Optional: for CSS handling in Rollup
+npm install --save-dev rollup-plugin-postcss postcss</code></pre>
+      <p><strong>Configure <code>tsconfig.json</code></strong> for TypeScript compilation:</p>
+      <pre><button class="copy-btn">Copy</button><code>{
+  "compilerOptions": {
+    "target": "ES6",            // Target modern JavaScript
+    "module": "ESNext",         // Use ES modules for tree shaking
+    "lib": ["dom", "dom.iterable", "esnext"],
+    "jsx": "react-jsx",         // Use new JSX transform
+    "declaration": true,        // Generate .d.ts files
+    "declarationDir": "dist/types", // Output directory for .d.ts files
+    "outDir": "dist",           // Output directory for JS files (if not using Rollup for this)
+    "rootDir": "src",           // Source directory
+    "strict": true,             // Enable all strict type-checking options
+    "esModuleInterop": true,    // Enables emit interoperability between CommonJS and ES Modules
+    "skipLibCheck": true,       // Skip type checking of all declaration files (*.d.ts)
+    "forceConsistentCasingInFileNames": true,
+    "moduleResolution": "node",
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "noEmit": true              // Let Rollup handle emits, TS only for type checking & declarations
+                                // Set to false if you want tsc to emit JS files alongside Rollup
+  },
+  "include": ["src/**/*"],      // Files to include for compilation
+  "exclude": ["node_modules", "dist", "**/*.stories.tsx", "**/*.test.tsx"]
+}</code></pre>
+    <p>Note: The <code>"noEmit": true</code> setting is common if Rollup is solely responsible for transpiling and bundling JS, while <code>tsc</code> is used for generating declaration files. Adjust if your setup differs.</p>
+    <p><strong>Configure Babel (<code>babel.config.js</code>)</strong> for Jest and Storybook (Rollup can use its own TypeScript plugin):</p>
+    <pre><button class="copy-btn">Copy</button><code>module.exports = {
+  presets: [
+    '@babel/preset-env', // For transpiling ES6+ down to ES5 if needed for older environments
+    '@babel/preset-react',
+    '@babel/preset-typescript',
+  ],
+};</code></pre>
+    <p><strong>Configure Rollup (<code>rollup.config.js</code>)</strong> for bundling your library:</p>
+    <pre><button class="copy-btn">Copy</button><code>import resolve from '@rollup/plugin-node-resolve';
+import commonjs from '@rollup/plugin-commonjs';
+import typescript from '@rollup/plugin-typescript';
+import postcss from 'rollup-plugin-postcss'; // If handling CSS
+// import { terser } from 'rollup-plugin-terser'; // For minification
+
+const packageJson = require('./package.json');
+
+export default {
+  input: 'src/index.ts', // Your library's entry point
+  output: [
+    {
+      file: packageJson.main,
+      format: 'cjs', // CommonJS for Node compatibility
+      sourcemap: true,
+    },
+    {
+      file: packageJson.module,
+      format: 'esm', // ES Module for tree shaking
+      sourcemap: true,
+    },
+  ],
+  plugins: [
+    resolve(),
+    commonjs(),
+    typescript({ tsconfig: './tsconfig.json', exclude: ["**/*.test.tsx", "**/*.stories.tsx"] }),
+    postcss({ // Example for handling CSS files
+      extract: 'styles.css', // Extracts CSS to a single file
+      minimize: true,
+    }),
+    // terser(), // Uncomment for production builds to minify
+  ],
+  external: ['react', 'react-dom'], // Externalize peer dependencies
+};</code></pre>
+    <p>Ensure your <code>package.json</code> has <code>main</code>, <code>module</code>, and <code>types</code> fields pointing to the Rollup outputs and declaration files respectively (see Publishing section).</p>
+    </section>
+
+    <section id="structure">
+      <h2>3. Structuring Your Library for Maintainability</h2>
+      <p>A clear folder structure is vital for a growing component library:</p>
+      <pre><button class="copy-btn">Copy</button><code>my-react-ui-library/
+├── dist/                     // Bundled output
+├── src/
+│   ├── index.ts              // Main export file for all public components/hooks
+│   ├── components/           // Directory for individual UI components
+│   │   └── Button/
+│   │       ├── Button.tsx    // Component logic and JSX
+│   │       ├── Button.module.css // Component-specific styles (CSS Modules example)
+│   │       ├── Button.stories.tsx // Storybook stories
+│   │       └── Button.test.tsx    // Jest/RTL tests
+│   │   └── AnotherComponent/
+│   ├── hooks/                // Reusable custom React hooks
+│   │   └── useSomeLogic.ts
+│   ├── styles/               // Global styles, design tokens, base styles
+│   │   ├── _variables.css    // CSS Variables for design tokens
+│   │   └── global.css
+│   └── utils/                // Shared utility functions
+│       └── helpers.ts
+├── .storybook/               // Storybook configuration
+├── jest.config.js            // Jest configuration
+├── rollup.config.js          // Rollup configuration
+├── tsconfig.json             // TypeScript configuration
+├── babel.config.js           // Babel configuration
+└── package.json</code></pre>
+      <p>Your main entry point <code>src/index.ts</code> should export everything you want to make public from your library:</p>
+      <pre><button class="copy-btn">Copy</button><code>// src/index.ts
+export * from './components/Button/Button';
+// export * from './components/AnotherComponent/AnotherComponent';
+// export * from './hooks/useSomeLogic';
+// export * from './styles/global.css'; // If you want to allow global CSS import
+</code></pre>
+    </section>
+
+    <section id="example-component">
+      <h2>4. Crafting Your First Component (Button Example)</h2>
+      <p>Let's create a foundational <code>Button</code> component.</p>
+      <p><strong><code>src/components/Button/Button.tsx</code></strong>:</p>
+      <pre><button class="copy-btn">Copy</button><code>import React, { ButtonHTMLAttributes } from 'react';
+import styles from './Button.module.css'; // Using CSS Modules
+
+export interface ButtonProps extends ButtonHTMLAttributes&lt;HTMLButtonElement&gt; {
+  variant?: 'primary' | 'secondary' | 'destructive';
+  size?: 'small' | 'medium' | 'large';
+  children: React.ReactNode; // Use children for the label or content
+}
+
+export const Button: React.FC&lt;ButtonProps&gt; = ({
+  children,
+  variant = 'primary',
+  size = 'medium',
+  className = '',
+  ...props
+}) =&gt; {
+  const modeClass = styles[variant] || styles.primary;
+  const sizeClass = styles[size] || styles.medium;
+
+  return (
+    &lt;button
+      type="button" // Default to type="button" for accessibility unless overridden
+      className={`${styles.buttonBase} ${modeClass} ${sizeClass} ${className}`}
+      {...props}
+    &gt;
+      {children}
+    &lt;/button&gt;
+  );
+};
+</code></pre>
+      <p><strong><code>src/components/Button/Button.module.css</code></strong> (Example using CSS Modules):</p>
+      <pre><button class="copy-btn">Copy</button><code>/* src/components/Button/Button.module.css */
+.buttonBase {
+  border: none;
+  padding: 10px 20px;
+  cursor: pointer;
+  font-family: inherit;
+  border-radius: 4px;
+  transition: background-color 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none; /* For anchor-like buttons */
+  font-weight: 700; /* Bolder for Montserrat */
+}
+
+.buttonBase:focus-visible {
+  outline: 2px solid var(--focus-ring-color, blue); /* Define --focus-ring-color in global styles */
+  outline-offset: 2px;
+}
+
+/* Variants */
+.primary {
+  background-color: var(--button-primary-bg, #007bff);
+  color: var(--button-primary-text, white);
+}
+.primary:hover {
+  background-color: var(--button-primary-hover-bg, #0056b3);
+}
+
+.secondary {
+  background-color: var(--button-secondary-bg, #6c757d);
+  color: var(--button-secondary-text, white);
+}
+.secondary:hover {
+  background-color: var(--button-secondary-hover-bg, #545b62);
+}
+
+.destructive {
+  background-color: var(--button-destructive-bg, #dc3545);
+  color: var(--button-destructive-text, white);
+}
+.destructive:hover {
+  background-color: var(--button-destructive-hover-bg, #c82333);
+}
+
+/* Sizes */
+.small {
+  padding: 6px 12px;
+  font-size: 0.875rem;
+}
+.medium {
+  padding: 10px 20px;
+  font-size: 1rem;
+}
+.large {
+  padding: 12px 24px;
+  font-size: 1.125rem;
+}
+</code></pre>
+      <p>Ensure you define CSS variables like <code>--button-primary-bg</code> in your global styles (e.g., <code>src/styles/_variables.css</code>) for theming capabilities.</p>
+    </section>
+
+    <section id="testing">
+      <h2>5. Comprehensive Testing & Storybook Integration</h2>
+      <p><strong>Testing with Jest & React Testing Library:</strong></p>
+      <p><strong><code>jest.config.js</code></strong>:</p>
+      <pre><button class="copy-btn">Copy</button><code>module.exports = {
+  testEnvironment: 'jsdom',
+  setupFilesAfterEnv: ['&lt;rootDir&gt;/jest.setup.js'], // if you have a setup file
+  moduleNameMapper: {
+    '\\.(css|less|scss|sass)$': 'identity-obj-proxy', // Mocks CSS Modules
+  },
+  transform: {
+    '^.+\\.(ts|tsx|js|jsx)$': 'babel-jest',
+  },
+};
+</code></pre>
+      <p>Create <code>jest.setup.js</code> (optional, for global test setup like importing <code>@testing-library/jest-dom</code>):</p>
+      <pre><button class="copy-btn">Copy</button><code>// jest.setup.js
+import '@testing-library/jest-dom';
+</code></pre>
+      <p><strong><code>src/components/Button/Button.test.tsx</code></strong>:</p>
+      <pre><button class="copy-btn">Copy</button><code>import React from 'react';
+import { render, screen, fireEvent } from '@testing-library/react';
+import { Button } from './Button';
+
+describe('Button Component', () => {
+  test('renders with children', () => {
+    render(&lt;Button&gt;Click Me&lt;/Button&gt;);
+    expect(screen.getByRole('button', { name: /Click Me/i })).toBeInTheDocument();
+  });
+
+  test('applies variant and size classes correctly', () => {
+    render(&lt;Button variant="secondary" size="large"&gt;Submit&lt;/Button&gt;);
+    const button = screen.getByRole('button', { name: /Submit/i });
+    // Note: Testing CSS module class names can be tricky. 
+    // It's often better to test visual appearance via visual regression tests.
+    // However, you can check if base classes are applied if needed.
+    expect(button).toHaveClass('buttonBase'); // from Button.module.css, actual name might be mangled
+    // For specific variant/size classes, snapshot testing or visual testing is more robust.
+  });
+
+  test('calls onClick handler when clicked', () => {
+    const handleClick = jest.fn();
+    render(&lt;Button onClick={handleClick}&gt;Test Click&lt;/Button&gt;);
+    fireEvent.click(screen.getByText('Test Click'));
+    expect(handleClick).toHaveBeenCalledTimes(1);
+  });
+
+  test('is disabled when disabled prop is true', () => {
+    render(&lt;Button disabled&gt;Disabled Button&lt;/Button&gt;);
+    expect(screen.getByRole('button', { name: /Disabled Button/i })).toBeDisabled();
+  });
+});
+</code></pre>
+
+      <p><strong>Storybook for Development and Documentation:</strong></p>
+      <p>Initialize Storybook in your project:</p>
+      <pre><button class="copy-btn">Copy</button><code>npx storybook@latest init</code></pre>
+      <p>Follow the prompts. It should detect your React setup.</p>
+      <p><strong><code>src/components/Button/Button.stories.tsx</code></strong>:</p>
+      <pre><button class="copy-btn">Copy</button><code>import React from 'react';
+import type { Meta, StoryObj } from '@storybook/react';
+import { Button, ButtonProps } from './Button'; // Import ButtonProps
+
+const meta: Meta&lt;ButtonProps&gt; = { // Use ButtonProps for Meta type
+  title: 'Components/Button',    // How it will appear in Storybook navigation
+  component: Button,
+  tags: ['autodocs'],            // Enables auto-generated documentation
+  argTypes: {                   // Define controls for props
+    variant: {
+      control: { type: 'select' },
+      options: ['primary', 'secondary', 'destructive'],
+      description: 'The visual style of the button',
+    },
+    size: {
+      control: { type: 'select' },
+      options: ['small', 'medium', 'large'],
+      description: 'The size of the button',
+    },
+    children: {
+      control: 'text',
+      description: 'Button label or content',
+    },
+    disabled: {
+      control: 'boolean',
+      description: 'Disables the button',
+    },
+    onClick: {
+      action: 'clicked', // Logs clicks in the Storybook actions tab
+      description: 'Optional click handler',
+    },
+  },
+  parameters: {
+    layout: 'centered', // Centers the component in the Canvas tab
+  },
+};
+
+export default meta;
+
+// Define a "template" story that maps args to the component
+type Story = StoryObj&lt;ButtonProps&gt;; // Use ButtonProps for Story type
+
+export const Primary: Story = {
+  args: {
+    variant: 'primary',
+    size: 'medium',
+    children: 'Primary Button',
+  },
+};
+
+export const Secondary: Story = {
+  args: {
+    variant: 'secondary',
+    size: 'medium',
+    children: 'Secondary Button',
+  },
+};
+
+export const Destructive: Story = {
+  args: {
+    variant: 'destructive',
+    size: 'medium',
+    children: 'Delete',
+  },
+};
+
+export const LargePrimary: Story = {
+  args: {
+    variant: 'primary',
+    size: 'large',
+    children: 'Large Primary',
+  },
+};
+
+export const SmallSecondary: Story = {
+  args: {
+    variant: 'secondary',
+    size: 'small',
+    children: 'Small Secondary',
+  },
+};
+
+export const Disabled: Story = {
+  args: {
+    variant: 'primary',
+    children: 'Disabled Button',
+    disabled: true,
+  },
+};
+</code></pre>
+      <p>Run Storybook with <code>npm run storybook</code>.</p>
+    </section>
+
+    <section id="publishing">
+      <h2>6. Publishing & Versioning Your Library</h2>
+      <p>Once your components are ready, you'll publish your library to a package registry (like npm or a private registry).</p>
+      <p><strong>Update <code>package.json</code></strong> with necessary fields:</p>
+      <pre><button class="copy-btn">Copy</button><code>{
+  "name": "my-react-ui-library",
+  "version": "0.1.0",
+  "private": false, // Set to false to publish
+  "description": "A fantastic React UI component library.",
+  "author": "Your Name &lt;youremail@example.com&gt;",
+  "license": "MIT", // Or your chosen license
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/yourusername/my-react-ui-library.git" // Replace
+  },
+  "main": "dist/index.cjs.js", // CommonJS entry point from Rollup
+  "module": "dist/index.esm.js", // ES Module entry point from Rollup
+  "types": "dist/types/index.d.ts", // TypeScript definitions entry point
+  "files": [ // Files to include in the published package
+    "dist"
+  ],
+  "scripts": {
+    "build": "rollup -c", // Your build command
+    "test": "jest",
+    "storybook": "storybook dev -p 6006",
+    "build-storybook": "storybook build",
+    "lint": "eslint src --ext .ts,.tsx",
+    "clean": "rm -rf dist" // Script to clean the dist folder
+  },
+  "peerDependencies": { // Specify peer dependencies
+    "react": "^17.0.0 || ^18.0.0",
+    "react-dom": "^17.0.0 || ^18.0.0"
+  },
+  "devDependencies": {
+    // ... your dev dependencies ...
+  },
+  "dependencies": {
+    // "tslib": "^2.x.x" // tslib is often a runtime dependency when using --importHelpers in tsconfig or by some TS features
+  }
+}
+</code></pre>
+      <p><strong>Publishing Steps:</strong></p>
+      <ol>
+        <li>Ensure your code is committed and pushed to your Git repository.</li>
+        <li>Build your library: <code>npm run build</code> (this should run Rollup and tsc for declarations).</li>
+        <li>Log in to npm (or your private registry): <code>npm login</code>.</li>
+        <li>Update the version (semantic versioning is recommended):
+            <code>npm version patch</code> (for bug fixes: 0.1.0 -> 0.1.1)<br>
+            <code>npm version minor</code> (for new features, non-breaking: 0.1.0 -> 0.2.0)<br>
+            <code>npm version major</code> (for breaking changes: 0.1.0 -> 1.0.0)
+        </li>
+        <li>Publish: <code>npm publish</code> (add <code>--access public</code> if publishing a scoped package to npm for the first time).</li>
+        <li>Push tags to Git: <code>git push --tags</code>.</li>
+      </ol>
+      <p>Consider using tools like <code>semantic-release</code> to automate the versioning and publishing process based on commit messages.</p>
+    </section>
+
+    <section id="advanced-considerations">
+      <h2>7. Advanced Considerations for Robust Libraries</h2>
+      <p>As your library grows, consider these advanced topics:</p>
+      <ul>
+        <li><strong>Accessibility (A11y):</strong>
+            <ul>
+                <li>Go beyond basic ARIA attributes. Ensure full keyboard navigability for all interactive components.</li>
+                <li>Test with screen readers (NVDA, VoiceOver, JAWS).</li>
+                <li>Manage focus states meticulously, especially for modals, dropdowns, and other overlay components.</li>
+                <li>Use tools like <code>@axe-core/react</code> for automated accessibility checks during development and testing.</li>
+                <li>Provide clear documentation on any accessibility implications of your components.</li>
+            </ul>
+        </li>
+        <li><strong>Theming Strategies:</strong>
+            <ul>
+                <li><strong>CSS Custom Properties (Variables):</strong> Highly recommended for modern libraries. Define a set of global and component-specific CSS variables for colors, fonts, spacing, etc. Consumers can then override these variables to theme the library.</li>
+                <li><strong>React Context API:</strong> For more dynamic theming or when CSS variables are insufficient (e.g., switching between light/dark mode which might involve more than just CSS). Provide a ThemeProvider component.</li>
+                <li><strong>Styled-components / Emotion Theming:</strong> If using CSS-in-JS, leverage their built-in theming capabilities.</li>
+                <li>Document clearly how to apply and customize themes.</li>
+            </ul>
+        </li>
+        <li><strong>Performance Optimization:</strong>
+            <ul>
+                <li>Use <code>React.memo</code> for functional components and <code>shouldComponentUpdate</code> (or <code>PureComponent</code>) for class components to prevent unnecessary re-renders.</li>
+                <li>Memoize expensive calculations with <code>useMemo</code> and callbacks with <code>useCallback</code>.</li>
+                <li>Be mindful of bundle size. Analyze your bundle with tools like <code>rollup-plugin-visualizer</code> or <code>webpack-bundle-analyzer</code>.</li>
+                <li>Lazy load components or parts of your library if they are not immediately needed.</li>
+                <li>Ensure efficient event handling and avoid memory leaks.</li>
+            </ul>
+        </li>
+        <li><strong>Developing Utility Hooks & Data Connectors (Helpers):</strong>
+            <ul>
+                <li>For internal tools, you might identify common data fetching patterns or interactions with specific internal APIs/databases.</li>
+                <li>Create custom hooks (e.g., <code>useInternalApi(endpoint, options)</code>) that encapsulate this logic. These hooks are part of your library but are not UI components.</li>
+                <li>These hooks can handle loading states, error handling, and data transformation, making it easier for consuming applications to interact with backends consistently.
+                    <pre><button class="copy-btn">Copy</button><code>// Example: src/hooks/useQueryData.ts
+import { useState, useEffect, useCallback } from 'react';
+
+interface QueryDataOptions {
+  // Define options: method, headers, body etc.
+  method?: 'GET' | 'POST' | 'PUT' | 'DELETE';
+  headers?: Record&lt;string, string&gt;;
+  body?: any;
+}
+
+export function useQueryData&lt;T&gt;(url: string, options?: QueryDataOptions) {
+  const [data, setData] = useState&lt;T | null&gt;(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState&lt;Error | null&gt;(null);
+
+  const fetchData = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const fetchOptions = {
+        method: options?.method || 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          ...options?.headers,
+        },
+        body: options?.body ? JSON.stringify(options.body) : undefined,
+      };
+      // Replace with your actual fetch logic, error handling, auth etc.
+      const response = await fetch(url, fetchOptions); 
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      const result = await response.json();
+      setData(result);
+    } catch (e) {
+      setError(e as Error);
+    } finally {
+      setLoading(false);
+    }
+  }, [url, options]); // Consider options dependency carefully if it's not stable
+
+  useEffect(() => {
+    fetchData();
+  }, [fetchData]); // Re-run if fetchData changes (due to url/options change)
+
+  return { data, loading, error, refetch: fetchData };
+}
+</code></pre>
+                </li>
+            </ul>
+        </li>
+        <li><strong>Contribution Guidelines & Code Review:</strong>
+            <ul>
+                <li>If multiple engineers contribute, establish clear guidelines: coding style (use Prettier and ESLint), commit message conventions, branching strategy (e.g., Gitflow), and PR process.</li>
+                <li>Enforce code reviews to maintain quality, share knowledge, and ensure consistency.</li>
+                <li>Automate checks with linters and formatters in your CI pipeline.</li>
+            </ul>
+        </li>
+        <li><strong>Internationalization (i18n) and Localization (l10n):</strong>
+            <ul>
+                <li>If your internal tools need to support multiple languages, plan for i18n from the start. This might involve passing locale props or using a context-based i18n library.</li>
+            </ul>
+        </li>
+        <li><strong>Visual Regression Testing:</strong>
+            <ul>
+                <li>Tools like Chromatic (by Storybook maintainers), Percy, or Applitools can help catch unintended visual changes in your components.</li>
+            </ul>
+        </li>
+      </ul>
+    </section>
+
+    <section id="conclusion">
+      <h2>8. Conclusion & Best Practices</h2>
+      <p>Building a high-quality <strong>React component library</strong> is an iterative process that requires careful planning, robust tooling, and a commitment to best practices. As an engineer, your focus should be on:</p>
+      <ul>
+        <li><strong>Component Design:</strong> Create flexible, composable, and accessible components with clear APIs.</li>
+        <li><strong>Code Quality:</strong> Write clean, maintainable, and well-typed TypeScript code.</li>
+        <li><strong>Thorough Testing:</strong> Implement comprehensive unit, integration, and potentially visual regression tests.</li>
+        <li><strong>Excellent Documentation:</strong> Use Storybook effectively to provide interactive examples and clear usage guidelines. Engineers are key contributors to good documentation.</li>
+        <li><strong>Collaboration:</strong> If working in a team, follow established contribution guidelines and participate actively in code reviews.</li>
+        <li><strong>Continuous Improvement:</strong> Regularly revisit and refactor components, optimize for performance, and incorporate feedback from users of the library.</li>
+      </ul>
+      <p>A well-crafted component library will significantly improve the efficiency, consistency, and quality of your organization's internal tools, making it a valuable asset for the engineering team.</p>
+    </section>
+  </main>
+  
+  <div class="testimonial-ad">
+                    <div class="testimonial-ad__image-container">
+                        <img src="https://placehold.co/90x90/6c757d/ffffff?text=DK&font=montserrat" 
+                             alt="Dinesh Kumar, VP Engineering, Yubi Group" 
+                             class="testimonial-ad__image">
+                    </div>
+                    <div class="testimonial-ad__content">
+                        <h3 class="testimonial-ad__headline">"We didnt build our library for internal tools; we rather used DronaHQ low code platform!"</h3>
+                        <p class="testimonial-ad__quote">
+                            "Building and maintaining our own React component library was a huge time sink. We switched to <strong>DronaHQ</strong>, a visual dev tool, and it's made building internal tools <strong>10x simpler and faster</strong> for our entire engineering team. Now we focus on solving business problems, not UI plumbing."
+                        </p>
+                        <p class="testimonial-ad__author">
+                            Dinesh Kumar
+                        </p>
+                        <p class="testimonial-ad__author-title">
+                            VP Engineering, Yubi Group
+                        </p>
+                        <a href="https://dronahq.com/signup?ref=jdBlog-testimonial-dineshkumar-yubi" class="testimonial-ad__cta">
+                            Simplify Your Internal Tooling &rarr;
+                        </a>
+                    </div>
+                </div>
+
+  <footer style="text-align:center; margin-top:2em;">
+   <a href="https://dronahq.com/signup?ref=jdBlog-reactlibrary-vs-Dronahq">dronahq.com</a>
+  </footer>
+
+  <script>
+    // Copy-to-clipboard for code snippets
+    document.querySelectorAll('.copy-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const code = btn.nextElementSibling.innerText;
+        navigator.clipboard.writeText(code).then(() => {
+          btn.textContent = 'Copied!';
+          setTimeout(() => btn.textContent = 'Copy', 2000);
+        }).catch(err => {
+          console.error('Failed to copy: ', err);
+        });
+      });
+    });
+  </script>
+
+</body>
+</html>
